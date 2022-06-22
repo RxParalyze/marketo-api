@@ -1,0 +1,827 @@
+swagger: "2.0"
+host: "marketo.swagger.io"
+basePath: "/bulk/v1"
+info:
+  version: "1.0.0"
+  title: "Marketo Bulk Export"
+externalDocs:
+  description: "Bulk Extract Documentation"
+  url: "https://developers.marketo.com/rest-api/bulk-extract/"
+tags:
+- name: "Authentication"
+  description: "OAuth Authentication Token Marketo API"
+  externalDocs:
+    description: "OAuth Authentication Documentation"
+    url: "https://developers.marketo.com/rest-api/endpoint-reference/authentication-endpoint-reference/"
+- name: "Activities"
+  description: "Bulk Activities export from Marketo API"
+  externalDocs:
+    description: "Bulk Extract Documentation"
+    url: "https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/"
+- name: "Custom Objects"
+  description: "Bulk Custom Objects export from Marketo API"
+  externalDocs:
+    description: "Bulk Extract Documentation"
+    url: "https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/"
+- name: "Leads"
+  description: "Bulk Leads export from Marketo API"
+  externalDocs:
+    description: "Bulk Extract Documentation"
+    url: "https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/"
+- name: "Program Members"
+  description: "Bulk Program Members export from Marketo API"
+  externalDocs:
+    description: "Bulk Extract Documentation"
+    url: "https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/"    
+schemes:
+- "https"
+- "http"
+paths:
+  /identity/oauth/token:
+    get:
+      tags:
+      - "Authentication"
+      summary: "Request an Authentication Token"
+      description: "Retrieve an access token from Marketo. Calls to this endpoint are not counted towards API call limit."
+      operationId: "requestAuthenticationToken"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Request a Token"
+        required: true
+        schema:
+          $ref: "#/definitions/requestToken"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Invalid status value"
+      security:
+      - marketo_auth:
+        - "read:job"
+  /activities/export/create.json:
+    post:
+      tags:
+      - "Activities"
+      summary: "Create Export Activity Job (Step 1)"
+      description: "Create export job for search criteria defined via \"filter\" parameter. Request returns the \"exportId\" which is passed as a parameter in subsequent calls to Bulk Export Activities endpoints. Use Enqueue Export Activity Job endpoint to queue the export job for processing. Use Get Export Activity Job Status endpoint to retrieve status of export job. Required Permissions: Read-Only Activity"
+      operationId: "exportActivityRequest"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Create new exportActivityRequest"
+        required: true
+        schema:
+          $ref: "#/definitions/exportActivityRequest"
+      responses:
+        "405":
+          description: "Invalid input"
+      security:
+      - marketo_auth:
+        - "read:job"
+  /activities/export/{exportId}/enqueue.json:
+    get:
+      tags:
+      - "Activities"
+      summary: "Place Export Job in Queue (Step 2)"
+      description: "Enqueue export job. This will place export job in queue, and will start the job when computing resources become available. The export job must be in \"Created\" state. Use Get Export Activity Job Status endpoint to retrieve status of export job. Required Permissions: Read-Only Activity"
+      operationId: "queueActivityJob"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Invalid status value"
+      parameters:
+        - name: "exportId"
+          type: "integer"
+          in: "path"
+          description: "Export ID"
+          required: true
+      security:
+      - marketo_auth:
+        - "read:job"
+  /activities/export/{exportId}/status.json:
+    get:
+      tags:
+      - "Activities"
+      summary: "Obtain Status of Export Job (Step 2.1, optional)"
+      description: "Returns status of an export job. Job status is available for 30 days after Completed or Failed status was reached. Required Permissions: Read-Only Activity"
+      operationId: "getActivityJobStatus"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Invalid status value"
+      parameters:
+        - name: "exportId"
+          type: "integer"
+          in: "path"
+          description: "Export ID"
+          required: true
+      security:
+      - marketo_auth:
+        - "read:job"
+  /activities/export/{exportId}/file.json:
+    get:
+      tags:
+      - "Activities"
+      summary: "Retrieve Export Job (Step 3)"
+      description: "Returns the file content of an export job. The export job must be in \"Completed\" state. Use Get Export Activity Job Status endpoint to retrieve status of export job. Required Permissions: Read-Only Activity. The file format is specified by calling the Create Export Activity Job endpoint. The following is an example of the default file format (\"CSV\"). Note that the \"attributes\" field is formatted as JSON."
+      operationId: "getActivityJobFile"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Invalid status value"
+      parameters:
+        - name: "exportId"
+          type: "integer"
+          in: "path"
+          description: "Export ID"
+          required: true
+      security:
+      - marketo_auth:
+        - "read:job"
+  /activities/export/{exportId}/cancel.json:
+    get:
+      tags:
+      - "Activities"
+      summary: "Cancel Export Job"
+      description: "Cancel export job. Required Permissions: Read-Only Activity"
+      operationId: "cancelActivityJob"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Invalid status value"
+      parameters:
+        - name: "exportId"
+          type: "integer"
+          in: "path"
+          description: "Export ID"
+          required: true
+      security:
+      - marketo_auth:
+        - "read:job"
+  /customobjects/{apiName}/export/create.json:
+    post:
+      tags:
+      - "Custom Objects"
+      summary: "Create Export Custom Object Job (Step 1)"
+      description: "Create export job for search criteria defined via \"filter\" parameter. Request returns the \"exportId\" which is passed as a parameter in subsequent calls to Bulk Export Custom Object endpoints. Use Enqueue Export Custom Object Job endpoint to queue the export job for processing. Use Get Export Custom Object Job Status endpoint to retrieve status of export job. Required Permissions: Read-Only Custom Object"
+      operationId: "exportCustomObjectRequest"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Create new exportCustomObjectRequest"
+        required: true
+        schema:
+          $ref: "#/definitions/exportCustomObjectRequest"
+      - name: "apiName"
+        type: "string"
+        in: "path"
+        description: "API Name"
+        required: true
+      responses:
+        "405":
+          description: "Invalid input"
+      security:
+      - marketo_auth:
+        - "read:job"
+  /customobjects/{apiName}/export/{exportId}/enqueue.json:
+    get:
+      tags:
+      - "Custom Objects"
+      summary: "Place Export Job in Queue (Step 2)"
+      description: "Enqueue export job. This will place export job in queue, and will start the job when computing resources become available. The export job must be in \"Created\" state. Use Get Export Custom Object Job Status endpoint to retrieve status of export job. Required Permissions: Read-Only Custom Object"
+      operationId: "queueCustomObjectJob"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Invalid status value"
+      parameters:
+        - name: "exportId"
+          type: "integer"
+          in: "path"
+          description: "Export ID"
+          required: true
+        - name: "apiName"
+          type: "string"
+          in: "path"
+          description: "API Name"
+          required: true
+      security:
+      - marketo_auth:
+        - "read:job"
+  /customobjects/{apiName}/export/{exportId}/status.json:
+    get:
+      tags:
+      - "Custom Objects"
+      summary: "Obtain Status of Custom Object Export Job (Step 2.1, optional)"
+      description: "Returns status of an export job. Job status is available for 30 days after Completed or Failed status was reached. Required Permissions: Read-Only Custom Object"
+      operationId: "getExportCustomObjectJobStatus"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Invalid status value"
+      parameters:
+        - name: "exportId"
+          type: "integer"
+          in: "path"
+          description: "Export ID"
+          required: true
+        - name: "apiName"
+          type: "string"
+          in: "path"
+          description: "API Name"
+          required: true
+      security:
+      - marketo_auth:
+        - "read:job"
+  /customobjects/{apiName}/export/{exportId}/file.json:
+    get:
+      tags:
+      - "Custom Objects"
+      summary: "Retrieve Export Job (Step 3)"
+      description: "Returns the file content of an export job. The export job must be in \"Completed\" state. Use Get Export Custom Object Job Status endpoint to retrieve status of export job. Required Permissions: Read-Only. Custom Object The file format is specified by calling the Create Export Custom Object Job endpoint. The following is an example of the default file format (\"CSV\")."
+      operationId: "getCustomObjectExportJobFile"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Invalid status value"
+      parameters:
+        - name: "exportId"
+          type: "integer"
+          in: "path"
+          description: "Export ID"
+          required: true
+        - name: "apiName"
+          type: "string"
+          in: "path"
+          description: "API Name"
+          required: true
+      security:
+      - marketo_auth:
+        - "read:job"
+  /customobjects/{apiName}/export/{exportId}/cancel.json:
+    get:
+      tags:
+      - "Custom Objects"
+      summary: "Cancel Export Job"
+      description: "Cancel export job. Required Permissions: Read-Only Activity"
+      operationId: "cancelCustomObjectExportJob"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Invalid status value"
+      parameters:
+        - name: "exportId"
+          type: "integer"
+          in: "path"
+          description: "Export ID"
+          required: true
+        - name: "apiName"
+          type: "string"
+          in: "path"
+          description: "API Name"
+          required: true
+      security:
+      - marketo_auth:
+        - "read:job"
+  /leads/export/create.json:
+    post:
+      tags:
+      - "Leads"
+      summary: "Create Export Leads Job (Step 1)"
+      description: "Create export job for search criteria defined via \"filter\" parameter. Request returns the \"exportId\" which is passed as a parameter in subsequent calls to Bulk Export Leads endpoints. Use Enqueue Export Lead Job endpoint to queue the export job for processing. Use Get Export Lead Job Status endpoint to retrieve status of export job. Required Permissions: Read-Only Lead"
+      operationId: "exportLeadRequest"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Create new exportLeadRequest"
+        required: true
+        schema:
+          $ref: "#/definitions/exportLeadRequest"
+      responses:
+        "405":
+          description: "Invalid input"
+      security:
+      - marketo_auth:
+        - "read:job"
+  /leads/export/{exportId}/enqueue.json:
+    get:
+      tags:
+      - "Leads"
+      summary: "Place Export Job in Queue (Step 2)"
+      description: "Enqueue export job. This will place export job in queue, and will start the job when computing resources become available. The export job must be in \"Created\" state. Use Get Export Lead Job Status endpoint to retrieve status of export job. Required Permissions: Read-Only Lead"
+      operationId: "queueLeadJob"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Invalid status value"
+      parameters:
+        - name: "exportId"
+          type: "integer"
+          in: "path"
+          description: "Export ID"
+          required: true
+      security:
+      - marketo_auth:
+        - "read:job"
+  /leads/export/{exportId}/status.json:
+    get:
+      tags:
+      - "Leads"
+      summary: "Obtain Status of Custom Object Export Job (Step 2.1, optional)"
+      description: "Returns status of an export job. Job status is available for 30 days after Completed or Failed status was reached. Required Permissions: Read-Only Lead"
+      operationId: "getExportLeadJobStatus"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Invalid status value"
+      parameters:
+        - name: "exportId"
+          type: "integer"
+          in: "path"
+          description: "Export ID"
+          required: true
+      security:
+      - marketo_auth:
+        - "read:job"
+  /leads/export/{exportId}/file.json:
+    get:
+      tags:
+      - "Leads"
+      summary: "Retrieve Export Job (Step 3)"
+      description: "Returns the file content of an export job. The export job must be in \"Completed\" state. Use Get Export Lead Job Status endpoint to retrieve status of export job. Required Permissions: Read-Only Lead. The file format is specified by calling the Create Export Lead Job endpoint. The following is an example of the default file format (\"CSV\")."
+      operationId: "getLeadExportJobFile"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Invalid status value"
+      parameters:
+        - name: "exportId"
+          type: "integer"
+          in: "path"
+          description: "Export ID"
+          required: true
+      security:
+      - marketo_auth:
+        - "read:job"
+  /leads/export/{exportId}/cancel.json:
+    get:
+      tags:
+      - "Leads"
+      summary: "Cancel Export Job"
+      description: "Cancel export job. Required Permissions: Read-Only Activity"
+      operationId: "cancelLeadExportJob"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Invalid status value"
+      parameters:
+        - name: "exportId"
+          type: "integer"
+          in: "path"
+          description: "Export ID"
+          required: true
+      security:
+      - marketo_auth:
+        - "read:job"
+  /program/members/export/create.json:
+    post:
+      tags:
+      - "Program Members"
+      summary: "Create Export Leads Job (Step 1)"
+      description: "Create export job for search criteria defined via \"filter\" parameter. Request returns the \"exportId\" which is passed as a parameter in subsequent calls to Bulk Export Program Members endpoints. Use Enqueue Export Program Member Job endpoint to queue the export job for processing. Use Get Export Program Member Job Status endpoint to retrieve status of export job. Required Permissions: Read-Only Lead"
+      operationId: "exportProgramMemberRequest"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Create new exportProgramMemberRequest"
+        required: true
+        schema:
+          $ref: "#/definitions/exportProgramMemberRequest"
+      responses:
+        "405":
+          description: "Invalid input"
+      security:
+      - marketo_auth:
+        - "read:job"
+  /program/members/export/{exportId}/enqueue.json:
+    get:
+      tags:
+      - "Program Members"
+      summary: "Place Export Job in Queue (Step 2)"
+      description: "Enqueue export job. This will place export job in queue, and will start the job when computing resources become available. The export job must be in \"Created\" state. Use Get Export Program Member Job Status endpoint to retrieve status of export job. Required Permissions: Read-Only Lead"
+      operationId: "queueProgramManagerJob"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Invalid status value"
+      parameters:
+        - name: "exportId"
+          type: "integer"
+          in: "path"
+          description: "Export ID"
+          required: true
+      security:
+      - marketo_auth:
+        - "read:job"
+  /program/members/export/{exportId}/status.json:
+    get:
+      tags:
+      - "Program Members"
+      summary: "Obtain Status of Custom Object Export Job (Step 2.1, optional)"
+      description: "Returns status of an export job. Job status is available for 30 days after Completed or Failed status was reached. Required Permissions: Read-Only Lead"
+      operationId: "getExportProgramManagerJobStatus"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Invalid status value"
+      parameters:
+        - name: "exportId"
+          type: "integer"
+          in: "path"
+          description: "Export ID"
+          required: true
+      security:
+      - marketo_auth:
+        - "read:job"
+  /program/members/export/{exportId}/file.json:
+    get:
+      tags:
+      - "Program Members"
+      summary: "Retrieve Export Job (Step 3)"
+      description: "Returns the file content of an export job. The export job must be in \"Completed\" state. Use Get Export Program Member Job Status endpoint to retrieve status of export job. Required Permissions: Read-Only Lead. The file format is specified by calling the Create Export Program Member Job endpoint. The following is an example of the default file format (\"CSV\")."
+      operationId: "getProgramManagerExportJobFile"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Invalid status value"
+      parameters:
+        - name: "exportId"
+          type: "integer"
+          in: "path"
+          description: "Export ID"
+          required: true
+      security:
+      - marketo_auth:
+        - "read:job"
+  /program/members/export/{exportId}/cancel.json:
+    get:
+      tags:
+      - "Program Members"
+      summary: "Cancel Export Job"
+      description: "Cancel export job. Required Permissions: Read-Only Activity"
+      operationId: "cancelProgramManagerExportJob"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+        "400":
+          description: "Invalid status value"
+      parameters:
+        - name: "exportId"
+          type: "integer"
+          in: "path"
+          description: "Export ID"
+          required: true
+      security:
+      - marketo_auth:
+        - "read:job"
+securityDefinitions:
+  marketo_auth:
+    type: "oauth2"
+    authorizationUrl: "https://marketo"
+    flow: "implicit"
+    scopes:
+      write:job: "create job"
+      read:job: "read job"
+definitions:
+  exportActivityRequest:
+    type: "object"
+    required:
+    - "fields"
+    - "filter"
+    properties:
+      columnHeaderNames:
+        type: "object"
+        required: 
+        - "name"
+        - "value"
+        properties:
+          name:
+            type: "string"
+          value:
+            type: "string"
+      fields:
+        type: "array"
+        items:
+          type: "string"
+      filter:
+        type: "object"
+        required:
+        - "createdAt"
+        properties:
+          activityTypeIds:
+            type: "array"
+            items:
+              type: "integer"
+              format: "int64"
+          primaryAttributeValueIds:
+            type: "array"
+            items:
+              type: "integer"
+              format: "int64"
+          primaryAttributeValues:
+            type: "array"
+            items:
+              type: "integer"
+              format: "int64"
+          createdAt:
+            type: "object"
+            properties:
+              endAt: 
+                type: "string"
+              startAt:
+                type: "string"
+      format:
+        type: "string"
+      status:
+        type: "string"
+        description: "Export Job Status"
+        enum:
+        - "Created"
+        - "Queued"
+        - "Processing"
+        - "Canceled"
+        - "Completed"
+        - "Failed"
+    xml:
+      name: "Export"
+  exportCustomObjectRequest:
+    type: "object"
+    required:
+    - "fields"
+    - "filter"
+    properties:
+      columnHeaderNames:
+        type: "object"
+        required: 
+        - "name"
+        - "value"
+        properties:
+          name:
+            type: "string"
+          value:
+            type: "string"
+      fields:
+        type: "array"
+        items:
+          type: "string"
+      filter:
+        type: "object"
+        required:
+        - "createdAt"
+        properties:
+          activityTypeIds:
+            type: "array"
+            items:
+              type: "integer"
+              format: "int64"
+          primaryAttributeValueIds:
+            type: "array"
+            items:
+              type: "integer"
+              format: "int64"
+          primaryAttributeValues:
+            type: "array"
+            items:
+              type: "integer"
+              format: "int64"
+          createdAt:
+            type: "object"
+            properties:
+              endAt: 
+                type: "string"
+              startAt:
+                type: "string"
+          smartListId: 
+            type: "integer"
+          smartListName:
+            type: "string"
+          staticListId: 
+            type: "integer"
+          staticListName:
+            type: "string"
+      format:
+        type: "string"
+      status:
+        type: "string"
+        description: "Export Job Status"
+        enum:
+        - "Created"
+        - "Queued"
+        - "Processing"
+        - "Canceled"
+        - "Completed"
+        - "Failed"
+    xml:
+      name: "Export"
+  exportLeadRequest:
+    type: "object"
+    required:
+    - "fields"
+    - "filter"
+    properties:
+      columnHeaderNames:
+        type: "object"
+        required: 
+        - "name"
+        - "value"
+        properties:
+          name:
+            type: "string"
+          value:
+            type: "string"
+      fields:
+        type: "array"
+        items:
+          type: "string"
+      filter:
+        type: "object"
+        required:
+        - "createdAt"
+        properties:
+          activityTypeIds:
+            type: "array"
+            items:
+              type: "integer"
+              format: "int64"
+          primaryAttributeValueIds:
+            type: "array"
+            items:
+              type: "integer"
+              format: "int64"
+          primaryAttributeValues:
+            type: "array"
+            items:
+              type: "integer"
+              format: "int64"
+          createdAt:
+            type: "object"
+            properties:
+              endAt: 
+                type: "string"
+              startAt:
+                type: "string"
+          smartListId: 
+            type: "integer"
+          smartListName:
+            type: "string"
+          staticListId: 
+            type: "integer"
+          staticListName:
+            type: "string"
+          updatedAt:
+            type: "object"
+            properties:
+              endAt: 
+                type: "string"
+              startAt:
+                type: "string"
+      format:
+        type: "string"
+      status:
+        type: "string"
+        description: "Export Job Status"
+        enum:
+        - "Created"
+        - "Queued"
+        - "Processing"
+        - "Canceled"
+        - "Completed"
+        - "Failed"
+    xml:
+      name: "Export"
+  exportProgramMemberRequest:
+    type: "object"
+    required:
+    - "fields"
+    - "filter"
+    properties:
+      columnHeaderNames:
+        type: "object"
+        required: 
+        - "name"
+        - "value"
+        properties:
+          name:
+            type: "string"
+          value:
+            type: "string"
+      fields:
+        type: "array"
+        items:
+          type: "string"
+      filter:
+        type: "object"
+        required:
+        - "createdAt"
+        properties:
+          programId:
+            type: "integer"
+      format:
+        type: "string"
+      status:
+        type: "string"
+        description: "Export Job Status"
+        enum:
+        - "Created"
+        - "Queued"
+        - "Processing"
+        - "Canceled"
+        - "Completed"
+        - "Failed"
+    xml:
+      name: "Export"
+  requestToken:
+    type: "object"
+    required:
+    - "client_id"
+    - "client_secret"
+    - "grant_type"
+    properties:
+      client_id:
+        type: "string"
+      client_secret:
+        type: "string"
+      grant_type:
+        type: "string"
+        enum:
+        - "client_credentials"
+    xml:
+      name: "Export"
