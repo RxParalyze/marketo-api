@@ -1,8 +1,6 @@
 # MARKETO BULK EXTRACTION API
 
-## INSTRUCTIONS TO BEGIN REST CALLS
-
-# GENERAL AUTOMATED BULK DOWNLOAD INSTRUCTIONS
+## GENERAL AUTOMATED BULK DOWNLOAD INSTRUCTIONS
 
 1. Install python and pip3
 2. Open a command line or terminal
@@ -20,7 +18,7 @@
 8. Save and close the file
 9. In the terminal, run "python3 automate.py"
 
-# WINDOWS INSTRUCTIONS BEFORE RUNNING SCRIPT
+## WINDOWS INSTRUCTIONS BEFORE RUNNING SCRIPT
 1. Open Powershell as Administrator
 2. Run "wsl --install" -> this might take some time
 3. Wait for completion
