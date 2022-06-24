@@ -12,7 +12,7 @@ info:
   license:
     name: "API License Agreement"
     url: "http://developers.marketo.com/api-license/"
-host: "075-WYV-623.mktorest.com"
+host: "munchkin_id.mktorest.com"
 basePath: "/"
 tags:
 - name: "Leads"

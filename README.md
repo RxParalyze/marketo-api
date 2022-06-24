@@ -2,14 +2,60 @@
 
 ## INSTRUCTIONS TO BEGIN REST CALLS
 
-# AUTOMATED BULK DOWNLOAD INSTRUCTIONS
+# GENERAL AUTOMATED BULK DOWNLOAD INSTRUCTIONS
 
 1. Install python and pip3
 2. Open a command line or terminal
 3. Go to the marketo/automate directory
 4. Run "pip3 install -r requirements.txt"
-5. Run "python3 automate.py"
+5. Open "automate.py" in a text editor (notepad, etc)
+6. Fill in your information next to client_id, client_secret, munchkin_id, staticListId, and staticListName
+7. Change the "start" and "end" dates to your desired date range
+    - ***ONLY CHANGE THE YEAR, MONTH, AND DATE LINES***
+    - For the start date, use the last day of the previous month
+    - For the end date, use the first day of the next month
+    - EXAMPLE: If you want the data from January 2018 to June 2022:
+        - start = "2017-12-31T00:00:00-0500"
+        - end = "2022-07-01T00:59:00-0500"
+8. Save and close the file
+9. In the terminal, run "python3 automate.py"
 
+# WINDOWS INSTRUCTIONS BEFORE RUNNING SCRIPT
+1. Open Powershell as Administrator
+2. Run "wsl --install" -> this might take some time
+3. Wait for completion
+    - It will install WSL kernel, GUI App Support, and Ubuntu
+    - You should get a message that says "The requested operation is successful. Changes will not be effective until the system is rebooted."
+4. Reboot your computer. It might automatically pop up a temporary window and then close it. This is normal.
+5. Go to the Search bar and open Ubuntu.
+6. You'll see a window that looks like a terminal with Ubuntu on the top
+7. Create a Username and Password
+8. Run "sudo apt update && sudo apt upgrade"
+    - It may ask you if you want to proceed. Type the letter "y"
+    - Wait for the command to complete. It will take some time.
+9. Run "exit"
+10. Re-open Ubuntu
+11. Run "sudo apt install -y python3-pip libcurl4-openssl-dev libssl-dev pkg-config"
+    - It may ask you if you want to proceed. Type the letter "y"
+12. Locate the "marketo-main" folder location on your computer.
+    - The easiest way to do this is to right-click the "marketo-main" folder, click properties, and look at the location
+    - You might have another folder inside the "marketo-main" folder called "marketo-main". You want to use the path of the second level folder
+13. In the Ubuntu window, run "cd /mnt/(drive letter in lowercase)/{path to marketo-main folder}
+    - Example Command: cd /mnt/c/Users/RxParalyze/Downloads/marketo-main/marketo-main
+14. Run "pip install -r requirements.txt"
+15. Open "automate.py" in a text editor (notepad, etc)
+16. Fill in your information next to client_id, client_secret, munchkin_id, staticListId, and staticListName
+17. Change the "start" and "end" dates to your desired date range
+    - ***ONLY CHANGE THE YEAR, MONTH, AND DATE LINES***
+    - For the start date, use the last day of the previous month
+    - For the end date, use the first day of the next month
+    - EXAMPLE: If you want the data from January 2018 to June 2022:
+        - start = "2017-12-31T00:00:00-0500"
+        - end = "2022-07-01T00:59:00-0500"
+18. Save and close the file
+19. In the Ubuntu window, run "python3 automate.py"
+
+Once you begin running the script, you'll see periodic information appear. It will take a long time to run this script, so I would suggest starting it at the end of your workday and leaving it alone.
 ### API POSTMAN SETUP INSTRUCTIONS
 1. Download this project as a ZIP file and extract the files
 2. Install [Postman](https://www.postman.com/downloads/)
